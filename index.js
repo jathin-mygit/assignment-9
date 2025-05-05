@@ -54,6 +54,6 @@ app.get('/register', function(req, res){
     res.render('register');
 })
 
-app.listen(4000, function(){
-    console.log('http://localhost:4000');
+app.listen(3000, function(){
+    console.log('Website running at : http://localhost:3000');
 })
