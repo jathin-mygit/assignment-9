@@ -12,7 +12,7 @@
                     We'll never share your email with anyone else.
                     <div id="emailValidation">
                         <ul>
-                            <li id="emailFormat" class="invalid">Valid email format (example@domain.com)</li>
+                            <li id="emailFormat" class="hidden">Valid email format (example@domain.com)</li>
                         </ul>
                     </div>
                 </small>
@@ -26,10 +26,10 @@
                 <small id="passwordHelp" class="form-text text-muted">
                     Your password must be at least 8 characters long and include:
                     <ul>
-                        <li id="length" class="invalid">Minimum 8 characters</li>
-                        <li id="uppercase" class="invalid">At least one uppercase letter</li>
-                        <li id="lowercase" class="invalid">At least one lowercase letter</li>
-                        <li id="number" class="invalid">At least one number</li>
+                        <li id="length" class="hidden">Minimum 8 characters</li>
+                        <li id="uppercase" class="hidden">At least one uppercase letter</li>
+                        <li id="lowercase" class="hidden">At least one lowercase letter</li>
+                        <li id="number" class="hidden">At least one number</li>
                     </ul>
                 </small>
             </div>
@@ -43,6 +43,9 @@
         }
         .valid {
             color: #28a745;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 
@@ -60,53 +63,101 @@
             const emailFormat = document.getElementById('emailFormat');
             
             // Email validation function
-            email.addEventListener('keyup', function() {
+            email.addEventListener('input', function() {
                 // Regular expression for email validation
                 const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
                 
-                if(emailRegex.test(email.value)) {
+                if (email.value === '') {
+                    // If field is empty, hide the validation message
+                    emailFormat.classList.add('hidden');
                     emailFormat.classList.remove('invalid');
-                    emailFormat.classList.add('valid');
+                    emailFormat.classList.remove('valid');
+                } else if (emailRegex.test(email.value)) {
+                    // If valid, hide the validation message (or optionally show as valid)
+                    emailFormat.classList.add('hidden');
+                    emailFormat.classList.remove('invalid');
+                    // Uncomment below if you want to show valid messages
+                    // emailFormat.classList.remove('hidden');
+                    // emailFormat.classList.add('valid');
                 } else {
+                    // Only show the message if the email is invalid
+                    emailFormat.classList.remove('hidden');
                     emailFormat.classList.remove('valid');
                     emailFormat.classList.add('invalid');
                 }
             });
             
             // Password validation function
-            password.addEventListener('keyup', function() {
+            password.addEventListener('input', function() {
+                const hasValue = password.value !== '';
+                
                 // Validate length
-                if(password.value.length >= 8) {
+                if (!hasValue) {
+                    // If field is empty, hide the validation message
+                    length.classList.add('hidden');
                     length.classList.remove('invalid');
-                    length.classList.add('valid');
+                    length.classList.remove('valid');
+                } else if (password.value.length >= 8) {
+                    // If valid, hide the validation message (or optionally show as valid)
+                    length.classList.add('hidden');
+                    length.classList.remove('invalid');
+                    // Uncomment below if you want to show valid messages
+                    // length.classList.remove('hidden');
+                    // length.classList.add('valid');
                 } else {
+                    // Only show the message if invalid
+                    length.classList.remove('hidden');
                     length.classList.remove('valid');
                     length.classList.add('invalid');
                 }
                 
                 // Validate uppercase
-                if(/[A-Z]/.test(password.value)) {
+                if (!hasValue) {
+                    uppercase.classList.add('hidden');
                     uppercase.classList.remove('invalid');
-                    uppercase.classList.add('valid');
+                    uppercase.classList.remove('valid');
+                } else if (/[A-Z]/.test(password.value)) {
+                    uppercase.classList.add('hidden');
+                    uppercase.classList.remove('invalid');
+                    // Uncomment below if you want to show valid messages
+                    // uppercase.classList.remove('hidden');
+                    // uppercase.classList.add('valid');
                 } else {
+                    uppercase.classList.remove('hidden');
                     uppercase.classList.remove('valid');
                     uppercase.classList.add('invalid');
                 }
                 
                 // Validate lowercase
-                if(/[a-z]/.test(password.value)) {
+                if (!hasValue) {
+                    lowercase.classList.add('hidden');
                     lowercase.classList.remove('invalid');
-                    lowercase.classList.add('valid');
+                    lowercase.classList.remove('valid');
+                } else if (/[a-z]/.test(password.value)) {
+                    lowercase.classList.add('hidden');
+                    lowercase.classList.remove('invalid');
+                    // Uncomment below if you want to show valid messages
+                    // lowercase.classList.remove('hidden');
+                    // lowercase.classList.add('valid');
                 } else {
+                    lowercase.classList.remove('hidden');
                     lowercase.classList.remove('valid');
                     lowercase.classList.add('invalid');
                 }
                 
                 // Validate number
-                if(/\d/.test(password.value)) {
+                if (!hasValue) {
+                    number.classList.add('hidden');
                     number.classList.remove('invalid');
-                    number.classList.add('valid');
+                    number.classList.remove('valid');
+                } else if (/\d/.test(password.value)) {
+                    number.classList.add('hidden');
+                    number.classList.remove('invalid');
+                    // Uncomment below if you want to show valid messages
+                    // number.classList.remove('hidden');
+                    // number.classList.add('valid');
                 } else {
+                    number.classList.remove('hidden');
                     number.classList.remove('valid');
                     number.classList.add('invalid');
                 }
@@ -114,19 +165,46 @@
             
             // Form submission validation
             document.getElementById('registerForm').addEventListener('submit', function(event) {
-                // Email validation
                 const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+                const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+                
+                // Check and show email validation message if invalid
                 if (!emailRegex.test(email.value)) {
+                    emailFormat.classList.remove('hidden');
+                    emailFormat.classList.add('invalid');
                     event.preventDefault();
-                    alert('Please enter a valid email address');
                     return false;
                 }
                 
-                // Password validation
-                const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
-                if (!passwordRegex.test(password.value)) {
+                // Check and show password validation messages if invalid
+                let passwordValid = true;
+                
+                if (password.value.length < 8) {
+                    length.classList.remove('hidden');
+                    length.classList.add('invalid');
+                    passwordValid = false;
+                }
+                
+                if (!/[A-Z]/.test(password.value)) {
+                    uppercase.classList.remove('hidden');
+                    uppercase.classList.add('invalid');
+                    passwordValid = false;
+                }
+                
+                if (!/[a-z]/.test(password.value)) {
+                    lowercase.classList.remove('hidden');
+                    lowercase.classList.add('invalid');
+                    passwordValid = false;
+                }
+                
+                if (!/\d/.test(password.value)) {
+                    number.classList.remove('hidden');
+                    number.classList.add('invalid');
+                    passwordValid = false;
+                }
+                
+                if (!passwordValid) {
                     event.preventDefault();
-                    alert('Please enter a valid password that meets all requirements');
                     return false;
                 }
             });
