@@ -1,20 +1,136 @@
 <%- include('partial/header') %>
     <div class="container mt-5">
         <h1>Register</h1>
-        <form action="/register" method="post">
+        <form action="/register" method="post" id="registerForm">
             <div class="form-group">
                 <label for="exampleInputEmail1">Email address</label>
                 <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                    placeholder="Enter email" name="username">
-                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
-                    else.</small>
+                    placeholder="Enter email" name="username" required
+                    pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
+                    title="Please enter a valid email address (e.g., example@domain.com)">
+                <small id="emailHelp" class="form-text text-muted">
+                    We'll never share your email with anyone else.
+                    <div id="emailValidation">
+                        <ul>
+                            <li id="emailFormat" class="invalid">Valid email format (example@domain.com)</li>
+                        </ul>
+                    </div>
+                </small>
             </div>
             <div class="form-group">
                 <label for="exampleInputPassword1">Password</label>
-                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
+                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password" 
+                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                    title="Must contain at least one number, one uppercase letter, one lowercase letter, and be at least 8 characters long"
+                    required>
+                <small id="passwordHelp" class="form-text text-muted">
+                    Your password must be at least 8 characters long and include:
+                    <ul>
+                        <li id="length" class="invalid">Minimum 8 characters</li>
+                        <li id="uppercase" class="invalid">At least one uppercase letter</li>
+                        <li id="lowercase" class="invalid">At least one lowercase letter</li>
+                        <li id="number" class="invalid">At least one number</li>
+                    </ul>
+                </small>
             </div>
             <button type="submit" class="btn btn-primary">Register</button>
         </form>
     </div>
+
+    <style>
+        .invalid {
+            color: #dc3545;
+        }
+        .valid {
+            color: #28a745;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Password validation
+            const password = document.getElementById('exampleInputPassword1');
+            const length = document.getElementById('length');
+            const uppercase = document.getElementById('uppercase');
+            const lowercase = document.getElementById('lowercase');
+            const number = document.getElementById('number');
+            
+            // Email validation
+            const email = document.getElementById('exampleInputEmail1');
+            const emailFormat = document.getElementById('emailFormat');
+            
+            // Email validation function
+            email.addEventListener('keyup', function() {
+                // Regular expression for email validation
+                const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+                
+                if(emailRegex.test(email.value)) {
+                    emailFormat.classList.remove('invalid');
+                    emailFormat.classList.add('valid');
+                } else {
+                    emailFormat.classList.remove('valid');
+                    emailFormat.classList.add('invalid');
+                }
+            });
+            
+            // Password validation function
+            password.addEventListener('keyup', function() {
+                // Validate length
+                if(password.value.length >= 8) {
+                    length.classList.remove('invalid');
+                    length.classList.add('valid');
+                } else {
+                    length.classList.remove('valid');
+                    length.classList.add('invalid');
+                }
+                
+                // Validate uppercase
+                if(/[A-Z]/.test(password.value)) {
+                    uppercase.classList.remove('invalid');
+                    uppercase.classList.add('valid');
+                } else {
+                    uppercase.classList.remove('valid');
+                    uppercase.classList.add('invalid');
+                }
+                
+                // Validate lowercase
+                if(/[a-z]/.test(password.value)) {
+                    lowercase.classList.remove('invalid');
+                    lowercase.classList.add('valid');
+                } else {
+                    lowercase.classList.remove('valid');
+                    lowercase.classList.add('invalid');
+                }
+                
+                // Validate number
+                if(/\d/.test(password.value)) {
+                    number.classList.remove('invalid');
+                    number.classList.add('valid');
+                } else {
+                    number.classList.remove('valid');
+                    number.classList.add('invalid');
+                }
+            });
+            
+            // Form submission validation
+            document.getElementById('registerForm').addEventListener('submit', function(event) {
+                // Email validation
+                const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email.value)) {
+                    event.preventDefault();
+                    alert('Please enter a valid email address');
+                    return false;
+                }
+                
+                // Password validation
+                const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+                if (!passwordRegex.test(password.value)) {
+                    event.preventDefault();
+                    alert('Please enter a valid password that meets all requirements');
+                    return false;
+                }
+            });
+        });
+    </script>
 
     <%- include('partial/footer') %>
