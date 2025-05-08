@@ -9,15 +9,22 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
-mongoose.connect('mongodb+srv://fakeaddress2202:vF7cKDZz8GKUpPi9@tasks.d8jyvby.mongodb.net/?retryWrites=true&w=majority&appName=tasks');
+mongoose.connect('mongodb+srv://fakeaddress2202:vF7cKDZz8GKUpPi9@tasks.d8jyvby.mongodb.net/?retryWrites=true&w=majority&appName=tasks')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 const tryschema = new mongoose.Schema({
     email : String,
     password : String
 })
 
+const secretSchema = new mongoose.Schema({
+    content: String
+})
+
 const secret = "this is little secrete";
 tryschema.plugin(encrypt, {secret : secret ,encryptedFields : ["password"]});
 const item = mongoose.model('second', tryschema);
+const Secret = mongoose.model('Secret', secretSchema);
 app.get('/', function(req, res){
     res.render('home');
 })
@@ -35,23 +42,80 @@ app.post('/register', function(req, res){
 app.post('/login', function(req, res){
     const username = req.body.username;
     const password = req.body.password;
-
-    item.findOne({email : username}).then((founduser) =>{
-        if(founduser.password == password){
-            res.render('secrete')
-        }
-    })
-    .catch(err =>{
-        console.log(err)
-    })
-         
     
+    console.log('Login attempt:', username);
+    
+    // Check if username and password are provided
+    if (!username || !password) {
+        console.log('Missing credentials');
+        return res.redirect('/login');
+    }
+
+    // Using lean() would bypass the decryption, so we use the default mongoose document
+    item.findOne({email : username})
+        .then((founduser) => {
+            if(!founduser) {
+                console.log('User not found:', username);
+                return res.redirect('/login');
+            }
+            
+            // The mongoose-encryption plugin automatically decrypts the password
+            // when we access it as a property on the mongoose document
+            console.log('Comparing passwords for:', username);
+            
+            if(founduser.password === password){
+                console.log('Login successful:', username);
+                res.render('secrete', { username: username });
+            } else {
+                console.log('Incorrect password for:', username);
+                console.log('Expected:', founduser.password, 'Received:', password);
+                res.redirect('/login');
+            }
+        })
+        .catch(err => {
+            console.error('Login error:', err);
+            res.redirect('/login');
+        });
 })
 app.get('/login', function(req, res){
     res.render('login');
 })
 app.get('/register', function(req, res){
     res.render('register');
+})
+
+app.get('/logout', function(req, res){
+    res.redirect('/');
+})
+
+app.get('/secrete', function(req, res){
+    Secret.find()
+        .then(foundSecrets => {
+            res.render('secrete', { secrets: foundSecrets });
+        })
+        .catch(err => {
+            console.log(err);
+            res.redirect('/');
+        });
+})
+
+app.get('/submit', function(req, res){
+    res.render('submit');
+})
+
+app.post('/submit', function(req, res){
+    const newSecret = new Secret({
+        content: req.body.secreat
+    });
+    
+    newSecret.save()
+        .then(() => {
+            res.redirect('/secrete');
+        })
+        .catch(err => {
+            console.log(err);
+            res.redirect('/submit');
+        });
 })
 
 app.listen(3000, function(){
