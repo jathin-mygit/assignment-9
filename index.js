@@ -6,9 +6,22 @@ const encrypt = require('mongoose-encryption')
 const { default: mongoose } = require('mongoose');
 
 const app = express();
+
+// Setup user authentication session
+app.use(express.json());
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
+
+// Authentication middleware
+const isAuthenticated = (req, res, next) => {
+    // Check if user is authenticated based on request headers or cookies
+    if (req.headers.isLoggedIn === 'true' || req.query.isLoggedIn === 'true') {
+        return next();
+    }
+    // If not authenticated, redirect to login page
+    res.redirect('/login');
+};
 mongoose.connect('mongodb+srv://fakeaddress2202:vF7cKDZz8GKUpPi9@tasks.d8jyvby.mongodb.net/?retryWrites=true&w=majority&appName=tasks')
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
@@ -33,10 +46,15 @@ app.post('/register', function(req, res){
         email : req.body.username,
         password : req.body.password
     })
-    newUser.save().then(res.render("secrete"))
-    .catch(err =>{
-        console.log(err)
-    })
+    newUser.save()
+        .then(() => {
+            // Automatically log in after successful registration
+            res.redirect('/secrete?isLoggedIn=true');
+        })
+        .catch(err => {
+            console.log(err);
+            res.redirect('/register');
+        })
 })
 
 app.post('/login', function(req, res){
@@ -65,7 +83,8 @@ app.post('/login', function(req, res){
             
             if(founduser.password === password){
                 console.log('Login successful:', username);
-                res.render('secrete', { username: username });
+                // Send authentication flag in the redirect URL
+                res.redirect('/secrete?isLoggedIn=true');
             } else {
                 console.log('Incorrect password for:', username);
                 console.log('Expected:', founduser.password, 'Received:', password);
@@ -85,13 +104,14 @@ app.get('/register', function(req, res){
 })
 
 app.get('/logout', function(req, res){
+    // User is logging out, redirect to home without auth flag
     res.redirect('/');
 })
 
-app.get('/secrete', function(req, res){
+app.get('/secrete', isAuthenticated, function(req, res){
     Secret.find()
         .then(foundSecrets => {
-            res.render('secrete', { secrets: foundSecrets });
+            res.render('secrete', { secrets: foundSecrets, isLoggedIn: true });
         })
         .catch(err => {
             console.log(err);
@@ -99,22 +119,22 @@ app.get('/secrete', function(req, res){
         });
 })
 
-app.get('/submit', function(req, res){
-    res.render('submit');
+app.get('/submit', isAuthenticated, function(req, res){
+    res.render('submit', { isLoggedIn: true });
 })
 
-app.post('/submit', function(req, res){
+app.post('/submit', isAuthenticated, function(req, res){
     const newSecret = new Secret({
         content: req.body.secreat
     });
     
     newSecret.save()
         .then(() => {
-            res.redirect('/secrete');
+            res.redirect('/secrete?isLoggedIn=true');
         })
         .catch(err => {
             console.log(err);
-            res.redirect('/submit');
+            res.redirect('/submit?isLoggedIn=true');
         });
 })
 
