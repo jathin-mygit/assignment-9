@@ -15,8 +15,8 @@ app.use(express.static('public'));
 
 // Authentication middleware
 const isAuthenticated = (req, res, next) => {
-    // Check if user is authenticated based on request headers or cookies
-    if (req.headers.isLoggedIn === 'true' || req.query.isLoggedIn === 'true') {
+    // Check if user is authenticated based on request headers, query parameters, or body
+    if (req.headers.isLoggedIn === 'true' || req.query.isLoggedIn === 'true' || req.body.isLoggedIn === 'true') {
         return next();
     }
     // If not authenticated, redirect to login page
@@ -130,11 +130,18 @@ app.post('/submit', isAuthenticated, function(req, res){
     
     newSecret.save()
         .then(() => {
-            res.redirect('/secrete?isLoggedIn=true');
+            // Stay on the same page and show success message
+            res.render('submit', { 
+                isLoggedIn: true, 
+                message: 'Secret submitted successfully!'
+            });
         })
         .catch(err => {
             console.log(err);
-            res.redirect('/submit?isLoggedIn=true');
+            res.render('submit', { 
+                isLoggedIn: true, 
+                error: 'Error saving your secret.'
+            });
         });
 })
 

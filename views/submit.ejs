@@ -1,14 +1,28 @@
 <%- include('partial/header') %>
-    <div class="container"></div>
+    <div class="container">
     <div class="jumbotron centered">
 
         <ion-icon name="key-outline"></ion-icon>
         <h1 class="display-3">Secreats</h1>
         <p class="lead">Don't keep your secreats, share them anonymously!</p>
+        
+        <% if(typeof message !== 'undefined') { %>
+            <div class="alert alert-success" role="alert">
+                <%= message %>
+            </div>
+        <% } %>
+        
+        <% if(typeof error !== 'undefined') { %>
+            <div class="alert alert-danger" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+        
         <form action="/submit" method="post">
             <div class="form-group">
                 <input type="text" class="form-control text-centered" name="secreat" placeholder="What's your secreat?">
             </div>
+            <input type="hidden" name="isLoggedIn" value="true">
             <button type="submit" class="btn btn-dark">Submit</button>
         </form>
     </div>
