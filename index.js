@@ -66,7 +66,7 @@ app.post('/login', function(req, res){
     // Check if username and password are provided
     if (!username || !password) {
         console.log('Missing credentials');
-        return res.redirect('/login');
+        return res.render('login', { error: 'Please provide both email and password' });
     }
 
     // Using lean() would bypass the decryption, so we use the default mongoose document
@@ -74,7 +74,7 @@ app.post('/login', function(req, res){
         .then((founduser) => {
             if(!founduser) {
                 console.log('User not found:', username);
-                return res.redirect('/login');
+                return res.render('login', { error: 'Incorrect username or password' });
             }
             
             // The mongoose-encryption plugin automatically decrypts the password
@@ -88,12 +88,12 @@ app.post('/login', function(req, res){
             } else {
                 console.log('Incorrect password for:', username);
                 console.log('Expected:', founduser.password, 'Received:', password);
-                res.redirect('/login');
+                res.render('login', { error: 'Incorrect username or password' });
             }
         })
         .catch(err => {
             console.error('Login error:', err);
-            res.redirect('/login');
+            res.render('login', { error: 'An error occurred during login. Please try again.' });
         });
 })
 app.get('/login', function(req, res){
